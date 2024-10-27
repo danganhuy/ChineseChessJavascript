@@ -4,30 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c1945cda-845f-4726-b8dd-c3d86eb8d304" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/BanCoTuong.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/blackCannon.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/blackChariot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/blackElephant.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/blackGeneral.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/blackGuard.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/blackHorse.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/blackSoldier.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/redCannon.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/redChariot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/redElephant.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/redGeneral.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/redGuard.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/redHorse.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/redSoldier.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/selectedPiece.png" beforeDir="false" />
-    </list>
+    <list default="true" id="c1945cda-845f-4726-b8dd-c3d86eb8d304" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -79,7 +56,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1730036183706</updated>
-      <workItem from="1730036184543" duration="617000" />
+      <workItem from="1730036184543" duration="999000" />
     </task>
     <servers />
   </component>
