@@ -1,2 +1,1 @@
-Chinese chess made in Javascript
-What
+<h1> Chinese chess made in Javascript </h1>
