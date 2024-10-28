@@ -670,20 +670,26 @@ function readMousePosition(event) {
      annoucePlayerTurn();
 }
 
+function resetBoard() {
+     board = new Board(50);
+     canvas.setCanvasSize(board);
+     canvas.drawBoard(board);
+     annoucePlayerTurn();
+}
+
 let totalImage = 16;
 let count = 0
 function waitImageToLoad() {
      count ++;
      if (count === totalImage) {
-          canvas.setCanvasSize(board);
-          canvas.drawBoard(board);
-          annoucePlayerTurn();
+          resetBoard();
      }
 }
 
-const board = new Board(50);
+let board;
 const canvasElement = document.getElementById("mainCanvas");
-const turnElement = document.getElementById("playerturn");
+const turnElement = document.getElementById("playerTurn");
+const resetButton = document.getElementById("resetButton");
 const canvas = new Canvas(canvasElement);
 
 boardImage.onload = waitImageToLoad;
@@ -703,4 +709,5 @@ blackGuardImage.onload = waitImageToLoad;
 blackGeneralImage.onload = waitImageToLoad;
 selectedPieceImage.onload = waitImageToLoad;
 
+resetButton.addEventListener("click", resetBoard);
 canvasElement.addEventListener("mousedown", readMousePosition);

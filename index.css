@@ -5,8 +5,18 @@
     left: 50%;
     transform: translate(-50%, -50%);
 }
-#playerturn {
+#playerTurn {
     position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+#resetButton {
+    border: 5px solid #ff1d36;
+    position: absolute;
+    font-size: 35px;
+    width: 125px;
+    height: 50px;
+    bottom: 0;
     left: 50%;
     transform: translate(-50%, -50%);
 }
