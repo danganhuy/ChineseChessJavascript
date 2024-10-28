@@ -61,6 +61,7 @@ class Board {
           this.margin = cellLength / 2;
           this.setPiece();
 
+          this.turn = true;
           this.selectedPoint = null;
           this.validMoves = [];
           this.validAttacks = [];
@@ -129,6 +130,9 @@ class Board {
                return 2;
      }
      movePiece(xa,ya,xb,yb, action) {
+          if (this.cells[xa][ya].side !== this.turn)
+               return;
+
           let points = action ? this.validMoves : this.validAttacks;
           let moved = false;
           for (let i=0; i < points.length; i++) {
@@ -136,6 +140,7 @@ class Board {
                     this.cells[xb][yb] = this.cells[xa][ya];
                     this.cells[xa][ya] = null;
                     moved = true;
+                    this.turn = !this.turn;
                     break;
                }
           }
@@ -168,7 +173,8 @@ class Board {
           if (this.selectedPoint == null) {
                // Select a piece
                if (this.cells[x][y] != null) {
-                    this.performAction(x,y,0);
+                    if (this.cells[x][y].side === this.turn)
+                         this.performAction(x,y,0);
                }
                else {
                }
@@ -645,6 +651,10 @@ class Canvas {
      }
 }
 
+function annoucePlayerTurn() {
+     turnElement.innerHTML = board.turn ? `Lượt đỏ` : `Lượt đen`;
+}
+
 function readMousePosition(event) {
      let x = event.clientX - (window.innerWidth / 2) + (board.width / 2);
      let y = event.clientY - (window.innerHeight / 2) + (board.height / 2);
@@ -657,6 +667,7 @@ function readMousePosition(event) {
      if (board.selectedPoint != null) {
           canvas.highlightPoints(board.selectedPoint, board.validMoves, board.validAttacks);
      }
+     annoucePlayerTurn();
 }
 
 let totalImage = 16;
@@ -666,11 +677,13 @@ function waitImageToLoad() {
      if (count === totalImage) {
           canvas.setCanvasSize(board);
           canvas.drawBoard(board);
+          annoucePlayerTurn();
      }
 }
 
 const board = new Board(50);
 const canvasElement = document.getElementById("mainCanvas");
+const turnElement = document.getElementById("playerturn");
 const canvas = new Canvas(canvasElement);
 
 boardImage.onload = waitImageToLoad;
