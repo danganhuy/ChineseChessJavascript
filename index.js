@@ -57,6 +57,7 @@ class Board {
                     this.cells[i][j] = null;
                }
           }
+          this.observer = new Observer(this,4,9,4,0);
           // For finding cell position
           this.margin = cellLength / 2;
           this.setPiece();
@@ -65,6 +66,7 @@ class Board {
           this.selectedPoint = null;
           this.validMoves = [];
           this.validAttacks = [];
+
      }
      setSPoint(x,y) {
           this.selectedPoint = new Point(x,y);
@@ -134,18 +136,17 @@ class Board {
                return;
 
           let points = action ? this.validMoves : this.validAttacks;
-          let moved = false;
           for (let i=0; i < points.length; i++) {
                if (xb === points[i].x && yb === points[i].y) {
+                    if (this.cells[xa][ya].toString() === "General")
+                         this.observer.updateGeneralPosition(xb,yb);
                     this.cells[xb][yb] = this.cells[xa][ya];
                     this.cells[xa][ya] = null;
-                    moved = true;
                     this.turn = !this.turn;
+                    this.observer.findThreat();
+                    this.performAction(xa,ya,-1);
                     break;
                }
-          }
-          if (moved) {
-               this.performAction(xa,ya,-1);
           }
      }
      performAction(x,y,action) {
@@ -210,6 +211,7 @@ class Piece {
      getPieceImage() {
           return null;
      }
+     toString() { return "Piece";}
      riverCheck(y) {
           if (this.side)
                return y < 5;
@@ -264,6 +266,7 @@ class Soldier extends Piece {
      getPieceImage() {
           return this.side ? redSoldierImage : blackSoldierImage;
      }
+     toString() { return "Soldier";}
 }
 class Cannon extends Piece {
      getValidMove(board,x,y) {
@@ -353,6 +356,7 @@ class Cannon extends Piece {
      getPieceImage() {
           return this.side ? redCannonImage : blackCannonImage;
      }
+     toString() { return "Cannon";}
 }
 class Chariot extends Piece {
      getValidMove(board,x,y) {
@@ -432,6 +436,7 @@ class Chariot extends Piece {
      getPieceImage() {
           return this.side ? redChariotImage : blackChariotImage;
      }
+     toString() { return "Chariot";}
 }
 class Horse extends Piece {
      getValidMove(board,x,y) {
@@ -501,6 +506,7 @@ class Horse extends Piece {
      getPieceImage() {
           return this.side ? redHorseImage : blackHorseImage;
      }
+     toString() { return "Horse";}
 }
 class Elephant extends Piece {
      getValidMove(board,x,y) {
@@ -530,6 +536,7 @@ class Elephant extends Piece {
      getPieceImage() {
           return this.side ? redElephantImage : blackElephantImage;
      }
+     toString() { return "Elephant";}
 }
 class Guard extends Piece {
      getValidMove(board,x,y) {
@@ -559,6 +566,7 @@ class Guard extends Piece {
      getPieceImage() {
           return this.side ? redGuardImage : blackGuardImage;
      }
+     toString() { return "Guard";}
 }
 class General extends Piece {
      getValidMove(board,x,y) {
@@ -587,6 +595,138 @@ class General extends Piece {
      }
      getPieceImage() {
           return this.side ? redGeneralImage : blackGeneralImage;
+     }
+     toString() { return "General";}
+}
+{
+//// How I will handle general checking
+//
+// Case 0: general is not getting check nor at risk of
+// + Condition: No opponent piece have a valid attack on general regardless of move make.
+// + How to handle: When general move, the game will check if it moved to dangerous spot.
+// + What needed to consider: All opponent piece valid attack.
+//
+// Case 1: general is getting check
+// + condition: 1 or more opponent piece have a valid attack on general.
+// + How to handle: All piece cannot do any move that is not for protecting the general
+// including general itself.
+// + What needed to consider: All piece valid move and attack.
+//
+// Case 2: general is at risk of getting check
+// + Condition: 1 or more opponent piece will have a valid attack on general if an ally
+// piece moved away or to (cannon check).
+// + How to handle: Restrict valid move of some ally piece
+// + What needed to consider: Whether a piece valid move allow opponent piece valid on general.
+//
+// ** If general is getting check there is no possible move to save it. that side is loss
+// and the opponent side win**
+//
+// *** How should I check and why ***
+//   Because guard and elephant can only protect general, I don't need to consider their
+// valid attack on opponent general. Two general can't be on the same column without any
+// piece in middle so there needed to be a check on that for case 0 and case 2. Because
+// I don't want to check every opponent piece valid move and attack every single time the
+// game find valid move for a piece, I will create a reverse checking where the game check
+// from the general position instead.
+//   This is how it worked, from general position check if
+// 1. an opponent piece can attack general if there is no piece blocking them (cannon, chariot,
+// horse)
+// 2. An opponent piece can attack general if their condition are met (cannon)
+// 3. An opponent piece can attack general also can be attack by general (chariot, soldier)
+//   Knowing how all piece can attack, position that I should check is
+// 1. Position adjacent to the general (chariot, soldier)
+// 2. The left, right, up, down from the general (chariot, cannon)
+// 3. Position that form an L with width of 1, height of 2 with general position (horse)
+//   If general is being checked, only move allow to be made are
+// 1. General move to safety and or attack the checker (soldier, chariot).
+// 2. Piece valid move and attack on the checker and/or blocking other checker.
+//   Risk I should check is
+// 1. A piece that block opponents piece valid attack on general move somewhere and stop
+// blocking (cannon, chariot, horse, general)
+// 2. General move somewhere that get itself checked
+////
+}
+class Threat {
+     constructor(point) {
+          this.point = point;
+          this.check = false;
+     }
+     seeIfCheck() {}
+     seeIfCanAttack() {}
+}
+class SoldierThreat extends Threat{
+     seeIfCheck() {}
+     seeIfCanAttack() {}
+}
+class CannonThreat extends Threat{
+     seeIfCheck() {}
+     seeIfCanAttack() {}
+}
+class ChariotThreat extends Threat{
+     seeIfCheck() {}
+     seeIfCanAttack() {}
+}
+class HorseThreat extends Threat{
+     seeIfCheck() {}
+     seeIfCanAttack() {}
+}
+// Handle checking
+class Observer {
+     constructor(board, xR, yR, xB, yB) {
+          this.board = board;
+          this.redGeneral = new Point(xR, yR);
+          this.blackGeneral = new Point(xB, yB);
+     }
+     updateGeneralPosition(x,y) {
+          if (board.turn)
+               this.redGeneral = new Point(x,y);
+          else
+               this.blackGeneral = new Point(x,y);
+     }
+     findSpecificPiece(x,y,type,list) {
+          if (this.board.checkPosition(x,y) !== 1) {
+          }
+          else if (this.board.cells[x][y].toString() === type &&
+              this.board.cells[x][y].side !== this.board.turn) {
+               list.push(new Point(x,y));
+          }
+     }
+
+     findThreat() {
+          let threats = [];
+          let xg = this.board.turn ? this.redGeneral.x : this.blackGeneral.x;
+          let yg = this.board.turn ? this.redGeneral.y : this.blackGeneral.y;
+
+          this.findSpecificPiece(xg+1,yg,"Soldier",threats);
+          this.findSpecificPiece(xg-1,yg,"Soldier",threats);
+          if (!this.board.turn)
+               this.findSpecificPiece(xg,yg+1,"Soldier",threats);
+          else
+               this.findSpecificPiece(xg,yg-1,"Soldier",threats);
+
+          this.findSpecificPiece(xg+2,yg+1,"Horse",threats);
+          this.findSpecificPiece(xg+1,yg+2,"Horse",threats);
+          this.findSpecificPiece(xg-2,yg-1,"Horse",threats);
+          this.findSpecificPiece(xg-1,yg-2,"Horse",threats);
+          this.findSpecificPiece(xg-2,yg+1,"Horse",threats);
+          this.findSpecificPiece(xg-1,yg+2,"Horse",threats);
+          this.findSpecificPiece(xg+2,yg-1,"Horse",threats);
+          this.findSpecificPiece(xg+1,yg-2,"Horse",threats);
+
+          function checkForChariotAndCannon(x,y,xDir,yDir,ob) {
+               for (let i = 1;; i++) {
+                    let p = new Point(x + xDir*i,y + yDir*i);
+                    if (ob.board.checkPosition(p.x,p.y) === -1)
+                         break;
+                    ob.findSpecificPiece(p.x,p.y,"Chariot",threats);
+                    ob.findSpecificPiece(p.x,p.y,"Cannon",threats);
+               }
+          }
+          checkForChariotAndCannon(xg,yg,0,1,this);
+          checkForChariotAndCannon(xg,yg,0,-1,this);
+          checkForChariotAndCannon(xg,yg,1,0,this);
+          checkForChariotAndCannon(xg,yg,-1,0,this);
+          console.log(threats);
      }
 }
 // Handle canvas
@@ -651,7 +791,7 @@ class Canvas {
      }
 }
 
-function annoucePlayerTurn() {
+function announcePlayerTurn() {
      turnElement.innerHTML = board.turn ? `Lượt đỏ` : `Lượt đen`;
 }
 
@@ -667,14 +807,14 @@ function readMousePosition(event) {
      if (board.selectedPoint != null) {
           canvas.highlightPoints(board.selectedPoint, board.validMoves, board.validAttacks);
      }
-     annoucePlayerTurn();
+     announcePlayerTurn();
 }
 
 function resetBoard() {
      board = new Board(50);
      canvas.setCanvasSize(board);
      canvas.drawBoard(board);
-     annoucePlayerTurn();
+     announcePlayerTurn();
 }
 
 let totalImage = 16;
