@@ -509,29 +509,33 @@ class Horse extends Piece {
      toString() { return "Horse";}
 }
 class Elephant extends Piece {
-     getValidMove(board,x,y) {
+     elephantMoveSet(board,x,y,action) {
           let points = [];
-          if (board.checkPosition(x+2,y+2,this.side) === 0 && !this.riverCheck(y+2))
+          if (board.checkPosition(x+2,y+2,this.side) === action && !this.riverCheck(y+2)
+              && board.checkPosition(x+1,y+1,this.side) === 0)
                points.push(new Point(x+2,y+2));
-          if (board.checkPosition(x+2,y-2,this.side) === 0 && !this.riverCheck(y-2))
+
+          if (board.checkPosition(x+2,y-2,this.side) === action && !this.riverCheck(y-2)
+              && board.checkPosition(x+1,y-1,this.side) === 0)
                points.push(new Point(x+2,y-2));
-          if (board.checkPosition(x-2,y+2,this.side) === 0 && !this.riverCheck(y+2))
+
+          if (board.checkPosition(x-2,y+2,this.side) === action && !this.riverCheck(y+2)
+              && board.checkPosition(x-1,y+1,this.side) === 0)
                points.push(new Point(x-2,y+2));
-          if (board.checkPosition(x-2,y-2,this.side) === 0 && !this.riverCheck(y-2))
+
+          if (board.checkPosition(x-2,y-2,this.side) === action && !this.riverCheck(y-2)
+              && board.checkPosition(x-1,y-1,this.side) === 0)
                points.push(new Point(x-2,y-2));
           return points;
+
+     }
+     getValidMove(board,x,y) {
+          let points = [];
+          return this.elephantMoveSet(board,x,y,0);
      }
      getValidAttack(board,x,y) {
           let points = [];
-          if (board.checkPosition(x+2,y+2,this.side) === 1 && !this.riverCheck(y+2))
-               points.push(new Point(x+2,y+2));
-          if (board.checkPosition(x+2,y-2,this.side) === 1 && !this.riverCheck(y-2))
-               points.push(new Point(x+2,y-2));
-          if (board.checkPosition(x-2,y+2,this.side) === 1 && !this.riverCheck(y+2))
-               points.push(new Point(x-2,y+2));
-          if (board.checkPosition(x-2,y-2,this.side) === 1 && !this.riverCheck(y-2))
-               points.push(new Point(x-2,y-2));
-          return points;
+          return this.elephantMoveSet(board,x,y,1);
      }
      getPieceImage() {
           return this.side ? redElephantImage : blackElephantImage;
@@ -646,29 +650,114 @@ class General extends Piece {
 // 2. General move somewhere that get itself checked
 ////
 }
+function createThreat(point, type) {
+     switch (type) {
+          case "Soldier":
+               return new SoldierThreat(point);
+          case "Cannon":
+               return new CannonThreat(point);
+          case "Chariot":
+               return new ChariotThreat(point);
+          case "Horse":
+               return new HorseThreat(point);
+     }
+}
 class Threat {
      constructor(point) {
           this.point = point;
-          this.check = false;
      }
-     seeIfCheck() {}
-     seeIfCanAttack() {}
+     seeIfCheck(xg,yg,board) {}
+     seeIfCanAttack(xg,yg,xf,yf,xt,yt,board) {}
 }
 class SoldierThreat extends Threat{
-     seeIfCheck() {}
-     seeIfCanAttack() {}
+     seeIfCheck(xg,yg,board) {
+          if (this.point.y === yg && Math.abs(this.point.x - xg) === 1)
+               return true;
+          if (board.turn) {
+               if (this.point.x === xg && this.point.y - yg === -1)
+                    return true;}
+          else {
+               if (this.point.x === xg && this.point.y - yg === 1)
+                    return true;}
+          return false;
+     }
+     seeIfCanAttack(xg,yg,xf,yf,xt,yt,board) {
+          return false;
+     }
 }
 class CannonThreat extends Threat{
-     seeIfCheck() {}
-     seeIfCanAttack() {}
+     seeIfCheck(xg,yg,board) {
+          let xDir = 0;
+          let yDir = 0;
+          if (this.point.y === yg) {
+               xDir = this.point.x - xg > 0 ? -1 : 1;
+          }
+          if (this.point.x === xg) {
+               yDir = this.point.y - yg > 0 ? -1 : 1;
+          }
+          let can = false;
+          for (let i = 1; ; i ++) {
+               if (this.point.x + (xDir * i) === xg && this.point.y + (yDir * i) === yg)
+                    break;
+               if (board.checkPosition(this.point.x + (xDir * i),this.point.y + (yDir * i),board.turn) > 0) {
+                    if (can) {
+                         can = false;
+                         break;
+                    }
+                    else {
+                         can = true;
+                    }
+               }
+          }
+          return can;
+     }
+     seeIfCanAttack(xg,yg,xf,yf,xt,yt,board) {
+          return false;
+     }
 }
 class ChariotThreat extends Threat{
-     seeIfCheck() {}
-     seeIfCanAttack() {}
+     seeIfCheck(xg,yg,board) {
+          let xDir = 0;
+          let yDir = 0;
+          if (this.point.y === yg) {
+               xDir = this.point.x - xg > 0 ? -1 : 1;
+          }
+          if (this.point.x === xg) {
+               yDir = this.point.y - yg > 0 ? -1 : 1;
+          }
+          let can = true;
+          for (let i = 1; ; i ++) {
+               if (this.point.x + (xDir * i) === xg && this.point.y + (yDir * i) === yg)
+                    break;
+               if (board.checkPosition(this.point.x + (xDir * i),this.point.y + (yDir * i),board.turn) > 0) {
+                    can = false;
+                    break;
+               }
+          }
+          return can;
+     }
+     seeIfCanAttack(xg,yg,xf,yf,xt,yt,board) {
+          return false;
+     }
 }
 class HorseThreat extends Threat{
-     seeIfCheck() {}
-     seeIfCanAttack() {}
+     seeIfCheck(xg,yg,board) {
+          if (this.point.y - yg > 0) {
+               if (this.point.x - xg > 0)
+                    return !(board.checkPosition(xg+1,yg+1,board.turn) > 0);
+               else
+                    return !(board.checkPosition(xg-1,yg+1,board.turn) > 0);
+          }
+          else {
+               if (this.point.x - xg > 0)
+                    return !(board.checkPosition(xg+1,yg-1,board.turn) > 0);
+               else
+                    return !(board.checkPosition(xg-1,yg-1,board.turn) > 0);
+          }
+     }
+     seeIfCanAttack(xg,yg,xf,yf,xt,yt,board) {
+          return false;
+     }
 }
 // Handle checking
 class Observer {
@@ -676,6 +765,8 @@ class Observer {
           this.board = board;
           this.redGeneral = new Point(xR, yR);
           this.blackGeneral = new Point(xB, yB);
+          this.checked = false;
+          this.threats = [];
      }
      updateGeneralPosition(x,y) {
           if (board.turn)
@@ -683,50 +774,123 @@ class Observer {
           else
                this.blackGeneral = new Point(x,y);
      }
-     findSpecificPiece(x,y,type,list) {
+     findSpecificPiece(x,y,type) {
           if (this.board.checkPosition(x,y) !== 1) {
           }
           else if (this.board.cells[x][y].toString() === type &&
               this.board.cells[x][y].side !== this.board.turn) {
-               list.push(new Point(x,y));
+               this.threats.push(createThreat(new Point(x,y), type));
           }
      }
-
+     findSpecificPiece2(x,y,type) {
+          if (this.board.checkPosition(x,y) !== 1) {
+          }
+          else if (this.board.cells[x][y].toString() === type &&
+              this.board.cells[x][y].side !== this.board.turn) {
+               return true;
+          }
+          return false;
+     }
      findThreat() {
-          let threats = [];
+          this.threats = [];
           let xg = this.board.turn ? this.redGeneral.x : this.blackGeneral.x;
           let yg = this.board.turn ? this.redGeneral.y : this.blackGeneral.y;
 
-          this.findSpecificPiece(xg+1,yg,"Soldier",threats);
-          this.findSpecificPiece(xg-1,yg,"Soldier",threats);
+          this.findSpecificPiece(xg+1,yg,"Soldier");
+          this.findSpecificPiece(xg-1,yg,"Soldier");
           if (!this.board.turn)
-               this.findSpecificPiece(xg,yg+1,"Soldier",threats);
+               this.findSpecificPiece(xg,yg+1,"Soldier");
           else
-               this.findSpecificPiece(xg,yg-1,"Soldier",threats);
+               this.findSpecificPiece(xg,yg-1,"Soldier");
 
-          this.findSpecificPiece(xg+2,yg+1,"Horse",threats);
-          this.findSpecificPiece(xg+1,yg+2,"Horse",threats);
-          this.findSpecificPiece(xg-2,yg-1,"Horse",threats);
-          this.findSpecificPiece(xg-1,yg-2,"Horse",threats);
-          this.findSpecificPiece(xg-2,yg+1,"Horse",threats);
-          this.findSpecificPiece(xg-1,yg+2,"Horse",threats);
-          this.findSpecificPiece(xg+2,yg-1,"Horse",threats);
-          this.findSpecificPiece(xg+1,yg-2,"Horse",threats);
+          this.findSpecificPiece(xg+2,yg+1,"Horse");
+          this.findSpecificPiece(xg+1,yg+2,"Horse");
+          this.findSpecificPiece(xg-2,yg-1,"Horse");
+          this.findSpecificPiece(xg-1,yg-2,"Horse");
+          this.findSpecificPiece(xg-2,yg+1,"Horse");
+          this.findSpecificPiece(xg-1,yg+2,"Horse");
+          this.findSpecificPiece(xg+2,yg-1,"Horse");
+          this.findSpecificPiece(xg+1,yg-2,"Horse");
 
           function checkForChariotAndCannon(x,y,xDir,yDir,ob) {
                for (let i = 1;; i++) {
                     let p = new Point(x + xDir*i,y + yDir*i);
                     if (ob.board.checkPosition(p.x,p.y) === -1)
                          break;
-                    ob.findSpecificPiece(p.x,p.y,"Chariot",threats);
-                    ob.findSpecificPiece(p.x,p.y,"Cannon",threats);
+                    ob.findSpecificPiece(p.x,p.y,"Chariot");
+                    ob.findSpecificPiece(p.x,p.y,"Cannon");
                }
           }
           checkForChariotAndCannon(xg,yg,0,1,this);
           checkForChariotAndCannon(xg,yg,0,-1,this);
           checkForChariotAndCannon(xg,yg,1,0,this);
           checkForChariotAndCannon(xg,yg,-1,0,this);
-          console.log(threats);
+          this.checkingThreats();
+     }
+     checkingThreats() {
+          let xg = this.board.turn ? this.redGeneral.x : this.blackGeneral.x;
+          let yg = this.board.turn ? this.redGeneral.y : this.blackGeneral.y;
+          for (let i = 0; i < this.threats.length; i++) {
+               if (this.threats[i].seeIfCheck(xg,yg,this.board)) {
+                    this.checked = true;
+               }
+          }
+     }
+     findSafePoint(x,y) {
+          let xg = this.board.turn ? this.redGeneral.x : this.blackGeneral.x;
+          let yg = this.board.turn ? this.redGeneral.y : this.blackGeneral.y;
+
+          if (this.findSpecificPiece2(xg+1,yg,"Soldier")) return false;
+          if (this.findSpecificPiece2(xg-1,yg,"Soldier")) return false;
+          if (!this.board.turn) {
+               if (this.findSpecificPiece2(xg, yg + 1, "Soldier")) return false;
+          }
+          else {
+               if (this.findSpecificPiece2(xg, yg - 1, "Soldier")) return false;
+          }
+          if (this.board.checkPosition(xg+1,yg+1,this.board.side)) {
+               if (this.findSpecificPiece2(xg+2,yg+1,"Horse")) return false;
+               if (this.findSpecificPiece2(xg+1,yg+2,"Horse")) return false;
+          }
+          if (this.board.checkPosition(xg-1,yg-1,this.board.side)) {
+               if (this.findSpecificPiece2(xg-2,yg-1,"Horse")) return false;
+               if (this.findSpecificPiece2(xg-1,yg-2,"Horse")) return false;
+          }
+          if (this.board.checkPosition(xg-1,yg+1,this.board.side)) {
+               if (this.findSpecificPiece2(xg-2,yg+1,"Horse")) return false;
+               if (this.findSpecificPiece2(xg-1,yg+2,"Horse")) return false;
+          }
+          if (this.board.checkPosition(xg+1,yg-1,this.board.side)) {
+               if (this.findSpecificPiece2(xg+2,yg-1,"Horse")) return false;
+               if (this.findSpecificPiece2(xg+1,yg-2,"Horse")) return false;
+          }
+          let cannonPrep = false;
+          function checkForChariotAndCannon(x,y,xDir,yDir,ob) {
+               for (let i = 1;; i++) {
+                    let p = new Point(x + xDir*i,y + yDir*i);
+                    if (ob.board.checkPosition(p.x,p.y) === -1)
+                         break;
+                    if (!cannonPrep) {
+                         if (this.board.checkPosition(p.x,p.y,board.side) > 0)
+                              cannonPrep = true;
+                         else
+                              if (ob.findSpecificPiece2(p.x,p.y,"Chariot")) return true;
+                    }
+                    else {
+                         if (this.board.checkPosition(p.x,p.y,board.side) > 0)
+                              break;
+                         else
+                              if (ob.findSpecificPiece2(p.x,p.y,"Cannon")) return true;
+                    }
+               }
+               return false;
+          }
+          if (checkForChariotAndCannon(xg,yg,0,1,this)) return true;
+          if (checkForChariotAndCannon(xg,yg,0,-1,this)) return true;
+          if (checkForChariotAndCannon(xg,yg,1,0,this)) return true;
+          if (checkForChariotAndCannon(xg,yg,-1,0,this)) return true;
+
+          return false;
      }
 }
 // Handle canvas

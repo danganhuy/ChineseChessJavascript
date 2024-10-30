@@ -9,14 +9,21 @@
     position: absolute;
     left: 50%;
     transform: translate(-50%, -50%);
+    user-select: none;
 }
 #resetButton {
-    border: 5px solid #ff1d36;
+    border: 5px solid #4c3f3f;
     position: absolute;
+    border-radius: 25px;
     font-size: 35px;
     width: 125px;
     height: 50px;
     bottom: 0;
     left: 50%;
     transform: translate(-50%, -50%);
+    user-select: none;
+}
+#resetButton:hover {
+    cursor: pointer;
+    background-color: #c1c1c1;
 }
